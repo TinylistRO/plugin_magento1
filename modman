@@ -1,0 +1,11 @@
+# Tinylist_Dropshipping — modman deployment map
+# Usage (from the Magento root):
+#   modman init            # once, if this store has no .modman yet
+#   modman clone <repo-url>
+# or for a local checkout:
+#   modman link /path/to/module-m1
+#
+# Each line maps <source in this repo> -> <target under the Magento root>.
+
+app/code/community/Tinylist/Dropshipping    app/code/community/Tinylist/Dropshipping
+app/etc/modules/Tinylist_Dropshipping.xml   app/etc/modules/Tinylist_Dropshipping.xml

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Tinylist_Dropshipping>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Payment/>
+                <Mage_Sales/>
+                <Mage_Api/>
+            </depends>
+        </Tinylist_Dropshipping>
+    </modules>
+</config>

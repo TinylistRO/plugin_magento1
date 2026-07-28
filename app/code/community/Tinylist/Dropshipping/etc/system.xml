@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <tinylist_dropshipping translate="label" module="tinylist_dropshipping">
+            <label>Tinylist Dropshipping</label>
+            <tab>general</tab>
+            <sort_order>500</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <carrier_status translate="label" module="tinylist_dropshipping">
+                    <label>Carrier Tracking Status</label>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <enabled_carriers translate="label comment" module="tinylist_dropshipping">
+                            <label>Enabled Carriers</label>
+                            <comment>Carriers queried when a tracking-status lookup arrives. Only enabled carriers are contacted; others return a friendly "not enabled" message.</comment>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>tinylist_dropshipping/system_config_source_carrier</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enabled_carriers>
+                    </fields>
+                </carrier_status>
+            </groups>
+        </tinylist_dropshipping>
+
+        <payment>
+            <groups>
+                <tinylist_dropshipping translate="label" module="tinylist_dropshipping">
+                    <label>Tinylist Dropshipping</label>
+                    <sort_order>700</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <active translate="label" module="tinylist_dropshipping">
+                            <label>Enabled</label>
+                            <comment>Disabled by default. When enabled the method is available to admins creating orders, but never shown on the storefront.</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </active>
+                        <title translate="label" module="tinylist_dropshipping">
+                            <label>Title</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </title>
+                        <order_status translate="label" module="tinylist_dropshipping">
+                            <label>New Order Status</label>
+                            <comment>Processing status assigned to orders placed with this method.</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_order_status_processing</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </order_status>
+                        <sort_order translate="label" module="tinylist_dropshipping">
+                            <label>Sort Order</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </sort_order>
+                    </fields>
+                </tinylist_dropshipping>
+            </groups>
+        </payment>
+    </sections>
+</config>

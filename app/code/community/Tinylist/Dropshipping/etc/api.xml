@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<config>
+    <api>
+        <resources>
+            <tinylist_dropshipping_order_invoice translate="title" module="tinylist_dropshipping">
+                <title>Tinylist Dropshipping - Order Invoice PDF</title>
+                <model>tinylist_dropshipping/order_invoice_api</model>
+                <acl>sales/order/invoice</acl>
+                <methods>
+                    <pdf translate="title" module="tinylist_dropshipping">
+                        <title>Retrieve order invoice PDF</title>
+                        <method>pdf</method>
+                        <acl>sales/order/invoice/info</acl>
+                    </pdf>
+                </methods>
+                <faults module="tinylist_dropshipping">
+                    <order_not_exists>
+                        <code>101</code>
+                        <message>Requested order does not exist.</message>
+                    </order_not_exists>
+                    <invoice_pdf_failed>
+                        <code>102</code>
+                        <message>Could not render the invoice PDF.</message>
+                    </invoice_pdf_failed>
+                </faults>
+            </tinylist_dropshipping_order_invoice>
+
+            <tinylist_dropshipping_order_tracking translate="title" module="tinylist_dropshipping">
+                <title>Tinylist Dropshipping - Carrier Tracking Status</title>
+                <model>tinylist_dropshipping/order_tracking_api</model>
+                <acl>sales/order/info</acl>
+                <methods>
+                    <status translate="title" module="tinylist_dropshipping">
+                        <title>Fetch live carrier status for an order tracking number</title>
+                        <method>status</method>
+                        <acl>sales/order/info</acl>
+                    </status>
+                </methods>
+            </tinylist_dropshipping_order_tracking>
+        </resources>
+
+        <v2>
+            <resources_function_prefix>
+                <tinylist_dropshipping_order_invoice>tinylistDropshippingOrderInvoice</tinylist_dropshipping_order_invoice>
+                <tinylist_dropshipping_order_tracking>tinylistDropshippingOrderTracking</tinylist_dropshipping_order_tracking>
+            </resources_function_prefix>
+        </v2>
+    </api>
+</config>

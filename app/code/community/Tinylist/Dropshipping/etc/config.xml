@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Tinylist_Dropshipping>
+            <version>1.0.0</version>
+        </Tinylist_Dropshipping>
+    </modules>
+
+    <global>
+        <helpers>
+            <tinylist_dropshipping>
+                <class>Tinylist_Dropshipping_Helper</class>
+            </tinylist_dropshipping>
+        </helpers>
+
+        <models>
+            <tinylist_dropshipping>
+                <class>Tinylist_Dropshipping_Model</class>
+            </tinylist_dropshipping>
+        </models>
+
+        <resources>
+            <tinylist_dropshipping_setup>
+                <setup>
+                    <module>Tinylist_Dropshipping</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </tinylist_dropshipping_setup>
+        </resources>
+
+        <!-- Group label shown in the admin "Create Order" payment list. -->
+        <payment>
+            <groups>
+                <tinylist_dropshipping>
+                    <label>Tinylist Dropshipping</label>
+                </tinylist_dropshipping>
+            </groups>
+        </payment>
+
+        <!--
+            Fixed set of carrier tracking-status providers. Add the next carriers
+            here: <key> node with a <label>, the provider <model>, and the
+            comma-separated Magento <carrier_codes> it handles. The "Enabled
+            Carriers" switch (system config) decides which of these are queried.
+        -->
+        <tinylist_dropshipping>
+            <carrier_status_providers>
+                <sameday>
+                    <label>Sameday Courier</label>
+                    <model>tinylist_dropshipping/carrier_status_sameday</model>
+                    <carrier_codes>bgsamedaycourier,bgsamedayeasybox</carrier_codes>
+                </sameday>
+            </carrier_status_providers>
+        </tinylist_dropshipping>
+    </global>
+
+    <default>
+        <payment>
+            <tinylist_dropshipping>
+                <active>0</active>
+                <model>tinylist_dropshipping/payment_method_dropshipping</model>
+                <title>Tinylist Dropshipping</title>
+                <order_status>processing</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>700</sort_order>
+                <group>offline</group>
+            </tinylist_dropshipping>
+        </payment>
+
+        <tinylist_dropshipping>
+            <carrier_status>
+                <!-- Comma-separated provider keys queried for tracking status. -->
+                <enabled_carriers>sameday</enabled_carriers>
+            </carrier_status>
+        </tinylist_dropshipping>
+    </default>
+
+    <adminhtml>
+        <acl>
+            <resources>
+                <admin>
+                    <children>
+                        <system>
+                            <children>
+                                <config>
+                                    <children>
+                                        <tinylist_dropshipping translate="title" module="tinylist_dropshipping">
+                                            <title>Tinylist Dropshipping</title>
+                                        </tinylist_dropshipping>
+                                    </children>
+                                </config>
+                            </children>
+                        </system>
+                    </children>
+                </admin>
+            </resources>
+        </acl>
+    </adminhtml>
+</config>

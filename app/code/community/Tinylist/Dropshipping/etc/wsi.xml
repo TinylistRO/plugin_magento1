@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SOAP v2 WS-I (document/literal) WSDL fragment. Used when
+    "Services > Magento Core API > WS-I Compliance" is set to Yes.
+    Mirrors the operation declared in wsdl.xml so the PDF method is callable
+    under both dispatch modes.
+-->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:typens="urn:Magento"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:Magento">
+            <xsd:element name="tinylistDropshippingOrderInvoicePdfRequestParam">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="sessionId" type="xsd:string"/>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="orderIncrementId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="tinylistDropshippingOrderInvoicePdfResponseParam">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="result" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="tinylistDropshippingOrderTrackingStatusRequestParam">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="sessionId" type="xsd:string"/>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="orderIncrementId" type="xsd:string"/>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="trackNumber" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="tinylistDropshippingOrderTrackingStatusResponseParam">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="result" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </types>
+
+    <message name="tinylistDropshippingOrderInvoicePdfRequest">
+        <part name="parameters" element="typens:tinylistDropshippingOrderInvoicePdfRequestParam"/>
+    </message>
+    <message name="tinylistDropshippingOrderInvoicePdfResponse">
+        <part name="parameters" element="typens:tinylistDropshippingOrderInvoicePdfResponseParam"/>
+    </message>
+
+    <message name="tinylistDropshippingOrderTrackingStatusRequest">
+        <part name="parameters" element="typens:tinylistDropshippingOrderTrackingStatusRequestParam"/>
+    </message>
+    <message name="tinylistDropshippingOrderTrackingStatusResponse">
+        <part name="parameters" element="typens:tinylistDropshippingOrderTrackingStatusResponseParam"/>
+    </message>
+
+    <portType name="{{var wsdl.handler}}PortType">
+        <operation name="tinylistDropshippingOrderInvoicePdf">
+            <documentation>Retrieve the PDF of an order's invoice, base64 encoded. Empty string when the order has no invoice.</documentation>
+            <input message="typens:tinylistDropshippingOrderInvoicePdfRequest"/>
+            <output message="typens:tinylistDropshippingOrderInvoicePdfResponse"/>
+        </operation>
+        <operation name="tinylistDropshippingOrderTrackingStatus">
+            <documentation>Fetch the live carrier status for an (orderIncrementId, trackNumber) pair. Returns a JSON envelope string.</documentation>
+            <input message="typens:tinylistDropshippingOrderTrackingStatusRequest"/>
+            <output message="typens:tinylistDropshippingOrderTrackingStatusResponse"/>
+        </operation>
+    </portType>
+
+    <binding name="{{var wsdl.handler}}Binding" type="typens:{{var wsdl.handler}}PortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="tinylistDropshippingOrderInvoicePdf">
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="tinylistDropshippingOrderTrackingStatus">
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+</definitions>

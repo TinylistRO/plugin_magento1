@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SOAP v2 (RPC/encoded) WSDL fragment. Magento merges the <message> nodes and
+    the <operation> children of <portType>/<binding> into the master v2 WSDL
+    served at /api/v2_soap/?wsdl=1.
+-->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:typens="urn:Magento"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <message name="tinylistDropshippingOrderInvoicePdfRequest">
+        <part name="sessionId" type="xsd:string"/>
+        <part name="orderIncrementId" type="xsd:string"/>
+    </message>
+    <message name="tinylistDropshippingOrderInvoicePdfResponse">
+        <part name="result" type="xsd:string"/>
+    </message>
+
+    <message name="tinylistDropshippingOrderTrackingStatusRequest">
+        <part name="sessionId" type="xsd:string"/>
+        <part name="orderIncrementId" type="xsd:string"/>
+        <part name="trackNumber" type="xsd:string"/>
+    </message>
+    <message name="tinylistDropshippingOrderTrackingStatusResponse">
+        <part name="result" type="xsd:string"/>
+    </message>
+
+    <portType name="{{var wsdl.handler}}PortType">
+        <operation name="tinylistDropshippingOrderInvoicePdf">
+            <documentation>Retrieve the PDF of an order's invoice, base64 encoded. Empty string when the order has no invoice.</documentation>
+            <input message="typens:tinylistDropshippingOrderInvoicePdfRequest"/>
+            <output message="typens:tinylistDropshippingOrderInvoicePdfResponse"/>
+        </operation>
+        <operation name="tinylistDropshippingOrderTrackingStatus">
+            <documentation>Fetch the live carrier status for an (orderIncrementId, trackNumber) pair. Returns a JSON envelope string.</documentation>
+            <input message="typens:tinylistDropshippingOrderTrackingStatusRequest"/>
+            <output message="typens:tinylistDropshippingOrderTrackingStatusResponse"/>
+        </operation>
+    </portType>
+
+    <binding name="{{var wsdl.handler}}Binding" type="typens:{{var wsdl.handler}}PortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="tinylistDropshippingOrderInvoicePdf">
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+            <input>
+                <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </input>
+            <output>
+                <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </output>
+        </operation>
+        <operation name="tinylistDropshippingOrderTrackingStatus">
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+            <input>
+                <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </input>
+            <output>
+                <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </output>
+        </operation>
+    </binding>
+</definitions>
