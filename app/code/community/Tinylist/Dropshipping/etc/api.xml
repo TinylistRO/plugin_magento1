@@ -37,12 +37,44 @@
                     </status>
                 </methods>
             </tinylist_dropshipping_order_tracking>
+            <!--
+                ACL is the stock catalog/product/info, deliberately, rather than
+                a resource of our own. The install script is idempotent and
+                skips a role that already exists, so a new resource would never
+                reach a store that installed an earlier version — every such
+                merchant would get "Access denied" until someone edited their
+                role by hand. catalog/product/info is already granted by the
+                role, and describes exactly what this returns.
+            -->
+            <tinylist_dropshipping_catalog translate="title" module="tinylist_dropshipping">
+                <title>Tinylist Dropshipping - Catalogue Digest</title>
+                <model>tinylist_dropshipping/catalog_digest_api</model>
+                <acl>catalog/product</acl>
+                <methods>
+                    <digest translate="title" module="tinylist_dropshipping">
+                        <title>Price and stock for a page of products</title>
+                        <method>digest</method>
+                        <acl>catalog/product/info</acl>
+                    </digest>
+                </methods>
+                <faults module="tinylist_dropshipping">
+                    <store_view_not_found>
+                        <code>103</code>
+                        <message>Requested store view does not exist.</message>
+                    </store_view_not_found>
+                    <invalid_updated_since>
+                        <code>104</code>
+                        <message>updatedSince is not a parseable date.</message>
+                    </invalid_updated_since>
+                </faults>
+            </tinylist_dropshipping_catalog>
         </resources>
 
         <v2>
             <resources_function_prefix>
                 <tinylist_dropshipping_order_invoice>tinylistDropshippingOrderInvoice</tinylist_dropshipping_order_invoice>
                 <tinylist_dropshipping_order_tracking>tinylistDropshippingOrderTracking</tinylist_dropshipping_order_tracking>
+                <tinylist_dropshipping_catalog>tinylistDropshippingCatalog</tinylist_dropshipping_catalog>
             </resources_function_prefix>
         </v2>
     </api>

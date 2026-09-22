@@ -7,7 +7,46 @@
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
              xmlns:typens="urn:Magento"
              xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <!--
+        The digest is the module's only operation returning a typed struct
+        rather than a string: its consumer decodes rows, so a JSON payload
+        would arrive as a scalar and normalise to an empty list. Every field is
+        xsd:string, matching how Magento hands back EAV values, and every one is
+        minOccurs="0" so a null (an unset special_price, a missing stock row) is
+        omitted rather than coerced to "0".
+    -->
+    <types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:Magento">
+            <xsd:complexType name="tinylistDropshippingCatalogDigestEntity">
+                <xsd:sequence>
+                    <xsd:element name="product_id" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="sku" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="type" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="status" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="visibility" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="parent_sku" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="price" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="special_price" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="special_from_date" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="special_to_date" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="qty" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="is_in_stock" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="updated_at" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="tinylistDropshippingCatalogDigestEntityArray">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="typens:tinylistDropshippingCatalogDigestEntity[]"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+
     <message name="tinylistDropshippingOrderInvoicePdfRequest">
         <part name="sessionId" type="xsd:string"/>
         <part name="orderIncrementId" type="xsd:string"/>
@@ -25,6 +64,17 @@
         <part name="result" type="xsd:string"/>
     </message>
 
+    <message name="tinylistDropshippingCatalogDigestRequest">
+        <part name="sessionId" type="xsd:string"/>
+        <part name="lastId" type="xsd:int"/>
+        <part name="pageSize" type="xsd:int"/>
+        <part name="updatedSince" type="xsd:string"/>
+        <part name="storeView" type="xsd:string"/>
+    </message>
+    <message name="tinylistDropshippingCatalogDigestResponse">
+        <part name="result" type="typens:tinylistDropshippingCatalogDigestEntityArray"/>
+    </message>
+
     <portType name="{{var wsdl.handler}}PortType">
         <operation name="tinylistDropshippingOrderInvoicePdf">
             <documentation>Retrieve the PDF of an order's invoice, base64 encoded. Empty string when the order has no invoice.</documentation>
@@ -35,6 +85,11 @@
             <documentation>Fetch the live carrier status for an (orderIncrementId, trackNumber) pair. Returns a JSON envelope string.</documentation>
             <input message="typens:tinylistDropshippingOrderTrackingStatusRequest"/>
             <output message="typens:tinylistDropshippingOrderTrackingStatusResponse"/>
+        </operation>
+        <operation name="tinylistDropshippingCatalogDigest">
+            <documentation>Price and stock for a page of products, ordered by product_id. Page by passing the last product_id seen as lastId; a short page is the last one.</documentation>
+            <input message="typens:tinylistDropshippingCatalogDigestRequest"/>
+            <output message="typens:tinylistDropshippingCatalogDigestResponse"/>
         </operation>
     </portType>
 
@@ -50,6 +105,15 @@
             </output>
         </operation>
         <operation name="tinylistDropshippingOrderTrackingStatus">
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+            <input>
+                <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </input>
+            <output>
+                <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </output>
+        </operation>
+        <operation name="tinylistDropshippingCatalogDigest">
             <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
             <input>
                 <soap:body namespace="urn:{{var wsdl.namespace}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>

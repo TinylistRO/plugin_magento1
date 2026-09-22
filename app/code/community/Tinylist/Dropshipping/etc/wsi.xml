@@ -42,6 +42,53 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
+
+            <!--
+                Document/literal counterpart of the digest types in wsdl.xml.
+                The array is a repeated element named complexObjectArray, which
+                is the convention Magento's own WS-I fragments use.
+            -->
+            <xsd:complexType name="tinylistDropshippingCatalogDigestEntity">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="product_id" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="sku" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="type" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="status" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="visibility" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="parent_sku" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="price" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="special_price" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="special_from_date" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="special_to_date" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="qty" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="is_in_stock" type="xsd:string"/>
+                    <xsd:element minOccurs="0" maxOccurs="1" name="updated_at" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="tinylistDropshippingCatalogDigestEntityArray">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" maxOccurs="unbounded" name="complexObjectArray" type="typens:tinylistDropshippingCatalogDigestEntity"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:element name="tinylistDropshippingCatalogDigestRequestParam">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="sessionId" type="xsd:string"/>
+                        <xsd:element minOccurs="0" maxOccurs="1" name="lastId" type="xsd:int"/>
+                        <xsd:element minOccurs="0" maxOccurs="1" name="pageSize" type="xsd:int"/>
+                        <xsd:element minOccurs="0" maxOccurs="1" name="updatedSince" type="xsd:string"/>
+                        <xsd:element minOccurs="0" maxOccurs="1" name="storeView" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="tinylistDropshippingCatalogDigestResponseParam">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="1" maxOccurs="1" name="result" type="typens:tinylistDropshippingCatalogDigestEntityArray"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:schema>
     </types>
 
@@ -59,6 +106,13 @@
         <part name="parameters" element="typens:tinylistDropshippingOrderTrackingStatusResponseParam"/>
     </message>
 
+    <message name="tinylistDropshippingCatalogDigestRequest">
+        <part name="parameters" element="typens:tinylistDropshippingCatalogDigestRequestParam"/>
+    </message>
+    <message name="tinylistDropshippingCatalogDigestResponse">
+        <part name="parameters" element="typens:tinylistDropshippingCatalogDigestResponseParam"/>
+    </message>
+
     <portType name="{{var wsdl.handler}}PortType">
         <operation name="tinylistDropshippingOrderInvoicePdf">
             <documentation>Retrieve the PDF of an order's invoice, base64 encoded. Empty string when the order has no invoice.</documentation>
@@ -69,6 +123,11 @@
             <documentation>Fetch the live carrier status for an (orderIncrementId, trackNumber) pair. Returns a JSON envelope string.</documentation>
             <input message="typens:tinylistDropshippingOrderTrackingStatusRequest"/>
             <output message="typens:tinylistDropshippingOrderTrackingStatusResponse"/>
+        </operation>
+        <operation name="tinylistDropshippingCatalogDigest">
+            <documentation>Price and stock for a page of products, ordered by product_id. Page by passing the last product_id seen as lastId; a short page is the last one.</documentation>
+            <input message="typens:tinylistDropshippingCatalogDigestRequest"/>
+            <output message="typens:tinylistDropshippingCatalogDigestResponse"/>
         </operation>
     </portType>
 
@@ -84,6 +143,15 @@
             </output>
         </operation>
         <operation name="tinylistDropshippingOrderTrackingStatus">
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="tinylistDropshippingCatalogDigest">
             <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
             <input>
                 <soap:body use="literal"/>

@@ -11,6 +11,8 @@ five things into one module:
 4. **Invoice PDF SOAP method** — return an order's invoice as a base64 PDF.
 5. **Carrier tracking status SOAP method** — resolve an `(order, tracking)`
    pair to a live carrier status (Sameday first; pluggable for more carriers).
+6. **Catalogue digest SOAP method** — price + stock for a page of products in
+   one call, instead of three round trips per product.
 
 Target platform: **Magento 1.9 CE / OpenMage LTS** (Blugento). Deployable with
 [modman](https://github.com/colinmollenhour/modman).
@@ -162,8 +164,8 @@ follows the Sameday module's own `test_mode` flag (demo host vs production).
 
 ## API documentation
 
-Both methods are exposed on the **SOAP v2** endpoint and merged into the WSDL
-served at `/api/v2_soap/?wsdl=1`. Both dispatch modes are covered:
+All three methods are exposed on the **SOAP v2** endpoint and merged into the
+WSDL served at `/api/v2_soap/?wsdl=1`. Both dispatch modes are covered:
 `etc/wsdl.xml` (default RPC/encoded) and `etc/wsi.xml` (WS-I document/literal,
 used when *System → Configuration → Services → Magento Core API → WS-I
 Compliance* is **Yes**). No config change is required to call them once the
@@ -330,6 +332,89 @@ if ($result['success']) {
 
 ---
 
+### Method: `tinylistDropshippingCatalogDigest`
+
+Price and stock for a page of products, in one call.
+
+| | |
+| ---------------- | ------------------------------------------------------ |
+| **ACL resource** | `catalog/product/info` |
+| **Signature**    | `tinylistDropshippingCatalogDigest(string sessionId, int lastId, int pageSize, string updatedSince, string storeView) : array` |
+
+**Why it exists** — Magento 1's V2 `catalogProductList` returns a fixed shape
+and has no attributes parameter, so **price cannot be requested in bulk
+natively**. Stock can (`catalogInventoryStockItemList` takes an array of ids);
+price cannot. That single gap forces a `catalogProductInfo` per product, so
+re-reading price and stock for a catalogue costs ~3 round trips per product.
+This method answers the same question with one collection query per page.
+
+**Parameters**
+
+| Name           | Type   | Default | Description                                                            |
+| -------------- | ------ | ------- | ---------------------------------------------------------------------- |
+| `lastId`       | int    | `0`     | `entity_id` cursor, **exclusive**. Pass the last `product_id` you saw. |
+| `pageSize`     | int    | `500`   | Clamped server-side to `1000`. Non-positive falls back to the default. |
+| `updatedSince` | string | `null`  | `Y-m-d H:i:s`. **Read the caveat below before relying on this.**       |
+| `storeView`    | string | `null`  | Store code or id, for store-scoped prices. Defaults to admin scope.    |
+
+**Returns** — an `array` of flat rows, **sorted by `product_id` ascending**.
+A row omits any field that is null, so read with a null-coalescing default:
+
+| Field | Notes |
+| ----- | ----- |
+| `product_id`, `sku`, `type` | `type` is the Magento `type_id`, e.g. `simple`, `configurable`. |
+| `status`, `visibility` | `status` is `1` enabled / `2` disabled. **Never filtered on** — a product that was just disabled still comes back, because that is how the caller learns to stop selling it. |
+| `parent_sku` | Set on a configurable child, `null` otherwise. A child with several parents reports the lowest parent `entity_id`. |
+| `price`, `special_price`, `special_from_date`, `special_to_date` | Raw columns. The **caller** decides whether the special price is in window; this method does not apply the rule. |
+| `qty`, `is_in_stock` | Left-joined from `cataloginventory_stock_item`, so both are absent if a product has no stock row. |
+| `updated_at` | `catalog_product_entity.updated_at`. |
+
+Paging is the same contract as `catalogProductList`, deliberately, so the two
+walk a catalogue identically: pass the last `product_id` back as `lastId`, and
+stop when a page returns fewer rows than `pageSize`. An exhausted cursor returns
+an **empty array**, not a fault.
+
+**Faults**
+
+| Code | Name                    | When                                    |
+| ---- | ----------------------- | --------------------------------------- |
+| 103  | `store_view_not_found`  | `storeView` names no existing store.    |
+| 104  | `invalid_updated_since` | `updatedSince` is not a parseable date. |
+
+> Both fault rather than falling back. A typo'd store code would otherwise
+> return default-scope prices that look valid and are wrong for every
+> store-scoped product; a dropped `updatedSince` would return the whole
+> catalogue as though it had all changed.
+
+> **`updatedSince` does not catch stock-only changes.** It filters on
+> `catalog_product_entity.updated_at`, and in Magento 1 a stock movement —
+> an order decrementing qty, `registerItemSale()`, a direct
+> `cataloginventory_stock_item` write — does **not** touch that column. The
+> obvious widening to `GREATEST(e.updated_at, si.updated_at)` is not available
+> either: `cataloginventory_stock_item` has no `updated_at` column in M1.
+>
+> So: `updatedSince` is safe for a **price / attribute** delta and unsafe for a
+> **stock** one. A stock refresh must walk the full catalogue. Confirm the
+> schema claim on your own store before depending on it:
+> `SHOW COLUMNS FROM cataloginventory_stock_item;`
+
+**Example (PHP SoapClient, v2)**
+
+```php
+$client  = new SoapClient('https://store/api/v2_soap/?wsdl=1', ['cache_wsdl' => WSDL_CACHE_NONE]);
+$session = $client->login('apiUser', 'apiKey');
+
+$lastId = 0;
+do {
+    $rows = $client->tinylistDropshippingCatalogDigest($session, $lastId, 500, null, null);
+    foreach ($rows as $row) {
+        $row = (array) $row;
+        $lastId = max($lastId, (int) $row['product_id']);
+        // ... use $row['price'], $row['qty'], $row['is_in_stock']
+    }
+} while (count($rows) === 500);
+```
+
 ## Layout
 
 ```
@@ -347,6 +432,9 @@ app/code/community/Tinylist/Dropshipping/
   Model/
     Payment/Method/Dropshipping.php            # admin-only offline payment method
     Carrier/Freeshipping.php                   # API/admin-only zero-cost carrier (tinylist_freeshipping)
+    Catalog/Digest.php                         # price + stock page, one collection query
+    Catalog/Digest/Api.php                     # catalogue digest resource (v1)
+    Catalog/Digest/Api/V2.php                  # catalogue digest resource (v2)
     Order/Invoice/Api.php                      # invoice PDF resource (v1)
     Order/Invoice/Api/V2.php                   # invoice PDF resource (v2)
     Order/Tracking/Api.php                     # tracking status resource (v1)
@@ -365,6 +453,15 @@ app/code/community/Tinylist/Dropshipping/
 - **Tracking status returns a JSON string**, not a typed SOAP struct — a
   deliberate choice so the contract stays stable across carriers with different
   native payloads. Callers `json_decode` the result.
+- **The catalogue digest is the exception**: it returns a typed struct array,
+  because its consumer decodes rows. A JSON payload would arrive as a scalar
+  and silently normalise to an empty list — a wrong answer rather than an error.
+- **Upgrading needs no role change.** The digest reuses the stock
+  `catalog/product/info` ACL rather than adding a resource of its own,
+  precisely because the setup script is idempotent and skips a role that
+  already exists: a new resource would never reach a store that installed an
+  earlier version, and every such merchant would get "Access denied" until
+  someone edited their role by hand. Update the files, clear the cache, done.
 - `catalog/product/tag` resources exist in Magento 1.9 CE (Blugento) but were
   removed in OpenMage; an inert rule row there is harmless.
 - Not runtime-tested against a live store here — verification was PHP lint + XML
