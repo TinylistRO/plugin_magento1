@@ -1,13 +1,15 @@
 # Tinylist_Dropshipping (Magento 1)
 
 Magento 1 connector module for the Tinylist dropshipping platform. It bundles
-four things into one module:
+five things into one module:
 
 1. **API role** — a `Tinylist Connector` SOAP/XML-RPC role, created on install
    with a curated, read-focused resource set.
 2. **Payment method** — an offline `Tinylist Dropshipping` method, admin-only.
-3. **Invoice PDF SOAP method** — return an order's invoice as a base64 PDF.
-4. **Carrier tracking status SOAP method** — resolve an `(order, tracking)`
+3. **Shipping method** — a zero-cost `tinylist_freeshipping` carrier, available
+   to the API and the admin only, never on the storefront.
+4. **Invoice PDF SOAP method** — return an order's invoice as a base64 PDF.
+5. **Carrier tracking status SOAP method** — resolve an `(order, tracking)`
    pair to a live carrier status (Sameday first; pluggable for more carriers).
 
 Target platform: **Magento 1.9 CE / OpenMage LTS** (Blugento). Deployable with
@@ -75,7 +77,48 @@ Dropshipping** (Enabled / Title / New Order Status / Sort Order).
 
 ---
 
-## 3. Carrier tracking status
+## 3. Shipping method — "Tinylist Dropshipping"
+
+Rate code **`tinylist_freeshipping`** — this is the value to put in Tinylist's
+merchant settings as the placement shipping method.
+
+- **Disabled by default** (`carriers/tinylist/active = 0`).
+- When enabled: returned to **SOAP/XML-RPC API** calls and to the **admin**
+  order-create screen; **never** to a storefront quote.
+- **Always priced 0.00.** Not configurable, on purpose — see below.
+
+Configure under **System → Configuration → Sales → Shipping Methods → Tinylist
+Dropshipping** (Enabled / Title / Method Name / Sort Order).
+
+### Why it exists
+
+Order placement needs a shipping method that always resolves. A real carrier
+does not: a table rate declines whenever the destination has no matching row or
+the subtotal is under its lowest threshold, and the SOAP API reports that as a
+bare `Shipping method is not available` (fault 1062) that names neither cause.
+
+### Why it is hidden from the storefront
+
+Magento 1 has no carrier equivalent of the payment method's `_canUseCheckout`,
+so the rule lives in `collectRates()` (`Model/Carrier/Freeshipping.php`): a rate
+is returned only when `Mage::app()->getStore()->isAdmin()` or the request's
+module name is `api`. A storefront checkout reports `checkout` and gets nothing,
+which is what stops every buyer choosing free delivery.
+
+> **If the store serves the SOAP API under a rewritten front name** (not
+> `/api/…`), update `API_MODULE_NAME` in `Model/Carrier/Freeshipping.php` or the
+> carrier will go silent for placement.
+
+### Why the price is not configurable
+
+Tinylist charges the buyer no shipping, and Magento reprices every placed order
+from its own catalogue. A non-zero placement rate would therefore have the
+courier collect items + shipping as cash on delivery from a buyer who agreed to
+neither. A config field is exactly how that gets reintroduced.
+
+---
+
+## 4. Carrier tracking status
 
 **System → Configuration → General → Tinylist Dropshipping → Carrier Tracking
 Status → Enabled Carriers** — a multiselect over the fixed provider set. Only
@@ -295,14 +338,15 @@ README.md
 app/etc/modules/Tinylist_Dropshipping.xml
 app/code/community/Tinylist/Dropshipping/
   etc/
-    config.xml                                 # module, models, payment defaults, provider registry, admin ACL
-    system.xml                                 # payment method + carrier-status admin config
+    config.xml                                 # module, models, payment + carrier defaults, provider registry, admin ACL
+    system.xml                                 # payment method + shipping carrier + carrier-status admin config
     api.xml                                    # SOAP resources, methods, v2 prefixes, faults
     wsdl.xml                                   # SOAP v2 (RPC/encoded) operations
     wsi.xml                                    # SOAP v2 WS-I (document/literal) operations
   Helper/Data.php
   Model/
     Payment/Method/Dropshipping.php            # admin-only offline payment method
+    Carrier/Freeshipping.php                   # API/admin-only zero-cost carrier (tinylist_freeshipping)
     Order/Invoice/Api.php                      # invoice PDF resource (v1)
     Order/Invoice/Api/V2.php                   # invoice PDF resource (v2)
     Order/Tracking/Api.php                     # tracking status resource (v1)

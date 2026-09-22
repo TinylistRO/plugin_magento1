@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Tinylist_Dropshipping>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </Tinylist_Dropshipping>
     </modules>
 
@@ -57,6 +57,22 @@
     </global>
 
     <default>
+        <!--
+            Zero-cost shipping carrier used for API order placement. Rate code
+            "tinylist_freeshipping". Disabled by default; never rendered on the
+            storefront (see Model/Carrier/Freeshipping.php).
+        -->
+        <carriers>
+            <tinylist>
+                <active>0</active>
+                <model>tinylist_dropshipping/carrier_freeshipping</model>
+                <title>Tinylist Dropshipping</title>
+                <name>Free delivery</name>
+                <sallowspecific>0</sallowspecific>
+                <sort_order>700</sort_order>
+            </tinylist>
+        </carriers>
+
         <payment>
             <tinylist_dropshipping>
                 <active>0</active>
