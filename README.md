@@ -17,6 +17,14 @@ five things into one module:
 Target platform: **Magento 1.9 CE / OpenMage LTS** (Blugento). Deployable with
 [modman](https://github.com/colinmollenhour/modman).
 
+## Compatibility
+
+| Platform                | Status                     |
+| ----------------------- | -------------------------- |
+| Magento 1.9 CE          | Compatible                 |
+| OpenMage LTS 20.x       | Compatible                 |
+| PHP 7.4 – 8.5           | Compatible (no deprecations up to 8.5) |
+
 ---
 
 ## Install
