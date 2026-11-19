@@ -115,13 +115,12 @@ abstract class Tinylist_Dropshipping_Model_Carrier_Status_Abstract
             curl_setopt($ch, $opt, $value);
         }
 
+        // No curl_close(): a no-op since PHP 8.0 and deprecated in 8.5; the
+        // handle is released when $ch goes out of scope.
         $response = curl_exec($ch);
         if ($response === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            $this->_throw('Could not reach the carrier API: ' . $error, 'carrier_unreachable');
+            $this->_throw('Could not reach the carrier API: ' . curl_error($ch), 'carrier_unreachable');
         }
-        curl_close($ch);
 
         return $response;
     }

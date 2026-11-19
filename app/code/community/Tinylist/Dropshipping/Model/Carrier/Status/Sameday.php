@@ -171,13 +171,11 @@ class Tinylist_Dropshipping_Model_Carrier_Status_Sameday extends Tinylist_Dropsh
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         }
 
+        // No curl_close(): deprecated in PHP 8.5 (see Abstract::_httpRequest).
         $body = curl_exec($ch);
         if ($body === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            $this->_throw('Could not reach Sameday Courier: ' . $error, 'carrier_unreachable');
+            $this->_throw('Could not reach Sameday Courier: ' . curl_error($ch), 'carrier_unreachable');
         }
-        curl_close($ch);
 
         $decoded = json_decode($body, true);
 
